@@ -13,7 +13,7 @@ Mac OS, can be found in the directory [cli/pascal/think_pascal](./cli/pascal/thi
 
 With some minimal changes, mainly the removal of a pseudo-terminal window 
 (every modern OS has a real terminal available now) and the change of the 
-construction 'copy(str, 1, 1)' to 'str[1]' as a way to get the first character 
+construction `copy(str, 1, 1)` to `str[1]` as a way to get the first character 
 of a string, the code compiles with the [Free Pascal compiler](https://www.freepascal.org/). This version of the code can be found in the 
 directory [cli/pascal/fpc](./cli/pascal/fpc).
 
