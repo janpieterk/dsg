@@ -6,6 +6,6 @@ using the Free Pascal compiler (version 3.2.2). See [https://www.freepascal.org/
 
 On Mac OS X 12.6.2 on an Intel Mac mini I used the following command:
 
-`$ fpc dsgrading.p -odsg`
+`$ `
 
 To create an executable called 'dsg'.

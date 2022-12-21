@@ -1,1 +1,774 @@
-{	This program is copyright (c) 1993 - 2005 Jos Kunst, the Jos Kunst heirs.	}{	This program is free software. You can redistribute it and/or modify it 	}{	under the terms of version 2 of the GNU General Public License, which you	}{	should have received with it.												}{	This program is distributed in the hope that it will be useful, but			}{	without any warranty, expressed or implied.									}unit chordworker;interface	uses		translations, chordscanner;	var		pmax, pmin, pmaxdiff: byte;		dsg, hroot: byte;		carr: chordarr;		totalofall: integer;		subsetascends, subsetdescends: boolean;	procedure extractset (chr: chordrec;									var chs: pitchset);{converse of scan: retrieves a chord set from the record containing its analysis}	procedure targetrecto (var chr: chordrec;									target: byte);{brings an analyzed chord as close as possible to a target dsg}	procedure targetsetto (var cs: pitchset;									target: byte);{brings an unanalyzed chord as close as possible to a target dsg}	procedure psmconsrec (var r: chordrec;									numberoftimes: byte);{diminishes an analyzed chord's dissonance for a given number of times, using parallel subset motion}	procedure psmdissrec (var r: chordrec;									numberoftimes: byte);{increases an analyzed chord's dissonance for a given number of times, using parallel subset motion}	procedure psmconsset (var cs: pitchset;									numberofsteps: byte);{diminishes an unanalyzed chord's dissonance for a given number of times, using parallel subset motion}	procedure psmdissset (var cs: pitchset;									numberofsteps: byte);{increases an unanalyzed chord's dissonance for a given number of times, using parallel subset motion}	procedure minimumconsrec (var chr: chordrec;									numberoftimes: byte);{makes a given analyzed chord the smallest possible amount more consonant}	procedure minimumdissrec (var chr: chordrec;									numberoftimes: byte);{makes a given analyzed chord the smallest possible amount more dissonant}	procedure minimumconsset (var cs: pitchset;									numberofsteps: byte);{makes a given unanalyzed chord the smallest possible amount more consonant}	procedure minimumdissset (var cs: pitchset;									numberofsteps: byte);{makes a given unanalyzed chord the smallest possible amount more dissonant}implementation	procedure extractset (chr: chordrec;									var chs: pitchset); { retrieves chord set from chord record }		var			p: byte;	begin{extractset}		p := 1;		chs := [];		repeat			chs := chs + [chr.stru[p, 1]];			p := p + 1;		until chr.stru[p, 1] = 0	end;{extractset}	procedure findpmaxcontrib (chr: chordrec;									except: pitchset); {looks for the most dissonant tone in the chord}		var			p: byte;			maxcontrib: integer;	begin{findpmaxcontrib}		p := 1;		maxcontrib := -1;		repeat			if (chr.stru[p, 2] > maxcontrib) and not (chr.stru[p, 1] in except) then				begin					pmax := chr.stru[p, 1];					maxcontrib := chr.stru[p, 2]				end;			p := p + 1;		until chr.stru[p, 1] = 0;	end;{findpmaxcontrib}	procedure downgrade (r: chordrec;									exceptset: pitchset;									var cra, crb, crc, crd: chordrec);{orders the chords resulting from the four possible second steps of the most dissonant tone, from low to high dsg }		var			cr1, cr11, cr2, cr22: chordrec;			chs, cs: pitchset;			t: integer;	begin{downgrade}		extractset(r, chs);		findpmaxcontrib(r, exceptset);		if pmax + 1 in chs then			cr1 := r		else			begin				cs := chs - [pmax];				cs := cs + [pmax + 1];				scan(cs, cr1)			end;		if pmax + 2 in chs then			cr11 := r		else			begin				cs := chs - [pmax];				cs := cs + [pmax + 2];				scan(cs, cr11)			end;		if pmax - 1 in chs then			cr2 := r		else			begin				cs := chs - [pmax];				cs := cs + [pmax - 1];				scan(cs, cr2)			end;		if pmax - 2 in chs then			cr22 := r		else			begin				cs := chs - [pmax];				cs := cs + [pmax - 2];				scan(cs, cr22)			end;		initto(cra, -1);		t := 0;		repeat			if t = cr1.total then				if cra.total = -1 then					begin						cra := cr1;						cr1.total := -1					end;			if t = cr2.total then				if cra.total = -1 then					begin						cra := cr2;						cr2.total := -1					end;			if t = cr11.total then				if cra.total = -1 then					begin						cra := cr11;						cr11.total := -1					end;			if t = cr22.total then				if cra.total = -1 then					begin						cra := cr22;						cr22.total := -1					end;			t := t + 1;		until cra.total <> -1;		initto(crb, -1);		t := 0;		repeat			if t = cr1.total then				if crb.total = -1 then					begin						crb := cr1;						cr1.total := -1					end;			if t = cr2.total then				if crb.total = -1 then					begin						crb := cr2;						cr2.total := -1					end;			if t = cr11.total then				if crb.total = -1 then					begin						crb := cr11;						cr11.total := -1					end;			if t = cr22.total then				if crb.total = -1 then					begin						crb := cr22;						cr22.total := -1					end;			t := t + 1;		until crb.total <> -1;		initto(crc, -1);		t := 0;		repeat			if t = cr1.total then				if crc.total = -1 then					begin						crc := cr1;						cr1.total := -1					end;			if t = cr2.total then				if crc.total = -1 then					begin						crc := cr2;						cr2.total := -1					end;			if t = cr11.total then				if crc.total = -1 then					begin						crc := cr11;						cr11.total := -1					end;			if t = cr22.total then				if crc.total = -1 then					begin						crc := cr22;						cr22.total := -1					end;			t := t + 1;		until crc.total <> -1;		initto(crd, -1);		t := 0;		repeat			if t = cr1.total then				if crd.total = -1 then					begin						crd := cr1;						cr1.total := -1					end;			if t = cr2.total then				if crd.total = -1 then					begin						crd := cr2;						cr2.total := -1					end;			if t = cr11.total then				if crd.total = -1 then					begin						crd := cr11;						cr11.total := -1					end;			if t = cr22.total then				if crd.total = -1 then					begin						crd := cr22;						cr22.total := -1					end;			t := t + 1;		until crd.total <> -1;	end;{downgrade}	procedure findpmincontrib (chr: chordrec;									except: pitchset); { finds the least dissonant tone in the chord }		var			p: byte;			mincontrib: integer;	begin{findpmincontrib}		p := 1;		mincontrib := 500;		repeat			if (chr.stru[p, 2] < mincontrib) and not (chr.stru[p, 1] in except) then				begin					pmin := chr.stru[p, 1];					mincontrib := chr.stru[p, 2]				end;			p := p + 1		until chr.stru[p, 1] = 0;	end;{findpmincontrib}	procedure upgrade (r: chordrec;									exceptset: pitchset;									var cra, crb, crc, crd: chordrec);{orders the chords resulting from the four possible second steps of the least dissonant tone, from high to low dsg }		var			cr1, cr11, cr2, cr22: chordrec;			chs, cs: pitchset;			t: integer;	begin{upgrade}		extractset(r, chs);		findpmincontrib(r, exceptset);		if pmin + 1 in chs then			cr1 := r		else			begin				cs := chs - [pmin];				cs := cs + [pmin + 1];				scan(cs, cr1)			end;		if pmin + 2 in chs then			cr11 := r		else			begin				cs := chs - [pmin];				cs := cs + [pmin + 2];				scan(cs, cr11)			end;		if pmin - 1 in chs then			cr2 := r		else			begin				cs := chs - [pmin];				cs := cs + [pmin - 1];				scan(cs, cr2)			end;		if pmin - 2 in chs then			cr22 := r		else			begin				cs := chs - [pmin];				cs := cs + [pmin - 2];				scan(cs, cr22)			end;		initto(crd, -1);		t := 0;		repeat			if t = cr1.total then				if crd.total = -1 then					begin						crd := cr1;						cr1.total := -1					end;			if t = cr2.total then				if crd.total = -1 then					begin						crd := cr2;						cr2.total := -1					end;			if t = cr11.total then				if crd.total = -1 then					begin						crd := cr11;						cr11.total := -1					end;			if t = cr22.total then				if crd.total = -1 then					begin						crd := cr22;						cr22.total := -1					end;			t := t + 1;		until crd.total <> -1;		initto(crc, -1);		t := 0;		repeat			if t = cr1.total then				if crc.total = -1 then					begin						crc := cr1;						cr1.total := -1					end;			if t = cr2.total then				if crc.total = -1 then					begin						crc := cr2;						cr2.total := -1					end;			if t = cr11.total then				if crc.total = -1 then					begin						crc := cr11;						cr11.total := -1					end;			if t = cr22.total then				if crc.total = -1 then					begin						crc := cr22;						cr22.total := -1					end;			t := t + 1;		until crc.total <> -1;		initto(crb, -1);		t := 0;		repeat			if t = cr1.total then				if crb.total = -1 then					begin						crb := cr1;						cr1.total := -1					end;			if t = cr2.total then				if crb.total = -1 then					begin						crb := cr2;						cr2.total := -1					end;			if t = cr11.total then				if crb.total = -1 then					begin						crb := cr11;						cr11.total := -1					end;			if t = cr22.total then				if crb.total = -1 then					begin						crb := cr22;						cr22.total := -1					end;			t := t + 1;		until crb.total <> -1;		initto(cra, -1);		t := 0;		repeat			if t = cr1.total then				if cra.total = -1 then					begin						cra := cr1;						cr1.total := -1					end;			if t = cr2.total then				if cra.total = -1 then					begin						cra := cr2;						cr2.total := -1					end;			if t = cr11.total then				if cra.total = -1 then					begin						cra := cr11;						cr11.total := -1					end;			if t = cr22.total then				if cra.total = -1 then					begin						cra := cr22;						cr22.total := -1					end;			t := t + 1;		until cra.total <> -1;	end;{upgrade}	procedure targetrecto (var chr: chordrec;									target: byte);		var			cr1, cr2, cr3, cr4: chordrec;			chset, excset: pitchset;	begin		if chr.diss > target then			begin				excset := [];				extractset(chr, chset);				repeat					downgrade(chr, excset, cr1, cr2, cr3, cr4);					if (cr1.diss >= target) and (cr1.diss < chr.diss) then						chr := cr1					else if (cr2.diss >= target) and (cr2.diss < chr.diss) then						chr := cr2					else if (cr3.diss >= target) and (cr3.diss < chr.diss) then						chr := cr3					else if (cr4.diss >= target) and (cr4.diss < chr.diss) then						chr := cr4;					excset := excset + [pmax];				until (excset >= chset) or (chr.diss = target)			end;		if chr.diss < target then			begin				excset := [];				extractset(chr, chset);				repeat					upgrade(chr, excset, cr1, cr2, cr3, cr4);					if (cr1.diss <= target) and (cr1.diss > chr.diss) then						chr := cr1					else if (cr2.diss <= target) and (cr2.diss > chr.diss) then						chr := cr2					else if (cr3.diss <= target) and (cr3.diss > chr.diss) then						chr := cr3					else if (cr4.diss <= target) and (cr4.diss > chr.diss) then						chr := cr4;					excset := excset + [pmin];				until (excset >= chset) or (chr.diss = target)			end;	end;{targetrecto}	procedure targetsetto (var cs: pitchset;									target: byte);		var			cr: chordrec;	begin		scan(cs, cr);		targetrecto(cr, target);		extractset(cr, cs);		dsg := cr.diss;		hroot := cr.hifu;		carr := cr.stru;		totalofall := cr.total	end;{targetsetto}	procedure findpmaxdiff (r1, r2: chordrec);		var			p, q, r: byte;			cs1, cs2: pitchset;			maxdiff: integer;	begin{findpmaxdiff}		extractset(r1, cs1);		extractset(r2, cs2);		maxdiff := -100;		for p := bottomnote to topnote do			if p in cs1 * cs2 then				begin					q := 0;					repeat						q := q + 1;					until r1.stru[q, 1] = p;					r := 0;					repeat						r := r + 1;					until r2.stru[r, 1] = p;					if (r2.stru[r, 2] - r1.stru[q, 2]) > maxdiff then						begin							maxdiff := r2.stru[r, 2] - r1.stru[q, 2];							pmaxdiff := p						end				end	end;{findpmaxdiff}	procedure psmconsrec (var r: chordrec;									numberoftimes: byte);		var			rtrial, rupward, rdownward: chordrec;			sr, smove, smoved: pitchset;			times, p: byte;	begin{psmconsrec}		subsetascends := FALSE;		subsetdescends := FALSE;		for times := 1 to numberoftimes do			begin				findpmaxcontrib(r, []);				smoved := [];				smove := [pmax];				extractset(r, sr);				sr := sr - smove;				sr := sr + [pmax + 1];				scan(sr, rtrial);				repeat					findpmaxdiff(r, rtrial);					smove := smove + [pmaxdiff];					rupward := rtrial;					for p := bottomnote to topnote do						if p in smove then							smoved := smoved + [p + 1];					sr := sr - smove;					sr := sr + smoved;					scan(sr, rtrial);				until rtrial.total >= rupward.total;				smoved := [];				smove := [pmax];				extractset(r, sr);				sr := sr - smove;				sr := sr + [pmax - 1];				scan(sr, rtrial);				repeat					findpmaxdiff(r, rtrial);					smove := smove + [pmaxdiff];					rdownward := rtrial;					for p := bottomnote to topnote do						if p in smove then							smoved := smoved + [p - 1];					sr := sr - smove;					sr := sr + smoved;					scan(sr, rtrial);				until rtrial.total >= rdownward.total;				if rdownward.total <= rupward.total then					begin						r := rdownward;						if numberoftimes = 1 then							subsetdescends := TRUE					end				else					begin						r := rupward;						if numberoftimes = 1 then							subsetascends := TRUE					end			end	end;{psmconsrec}	procedure psmdissrec (var r: chordrec;									numberoftimes: byte);		var			rtrial, rupward, rdownward: chordrec;			sr, smove, smoved: pitchset;			times, p: byte;	begin{psmdissrec}		subsetascends := FALSE;		subsetdescends := FALSE;		for times := 1 to numberoftimes do			begin				findpmincontrib(r, []);				smoved := [];				smove := [pmin];				extractset(r, sr);				sr := sr - smove;				sr := sr + [pmin + 1];				scan(sr, rtrial);				repeat					findpmaxdiff(rtrial, r);					smove := smove + [pmaxdiff];					rupward := rtrial;					for p := bottomnote to topnote do						if p in smove then							smoved := smoved + [p + 1];					sr := sr - smove;					sr := sr + smoved;					scan(sr, rtrial);				until rtrial.total <= rupward.total;				smoved := [];				smove := [pmin];				extractset(r, sr);				sr := sr - smove;				sr := sr + [pmin - 1];				scan(sr, rtrial);				repeat					findpmaxdiff(rtrial, r);					smove := smove + [pmaxdiff];					rdownward := rtrial;					for p := bottomnote to topnote do						if p in smove then							smoved := smoved + [p - 1];					sr := sr - smove;					sr := sr + smoved;					scan(sr, rtrial);				until rtrial.total <= rdownward.total;				if rdownward.total >= rupward.total then					begin						r := rdownward;						if numberoftimes = 1 then							subsetdescends := TRUE					end				else					begin						r := rupward;						if numberoftimes = 1 then							subsetascends := TRUE					end			end	end;{psmdissrec}	procedure psmconsset (var cs: pitchset;									numberofsteps: byte);		var			cr: chordrec;	begin		scan(cs, cr);		psmconsrec(cr, numberofsteps);		dsg := cr.diss;		totalofall := cr.total;		hroot := cr.hifu;		carr := cr.stru;		extractset(cr, cs)	end;	procedure psmdissset (var cs: pitchset;									numberofsteps: byte);		var			cr: chordrec;	begin		scan(cs, cr);		psmdissrec(cr, numberofsteps);		dsg := cr.diss;		totalofall := cr.total;		hroot := cr.hifu;		carr := cr.stru;		extractset(cr, cs)	end;	procedure minimumconsrec (var chr: chordrec;									numberoftimes: byte);		var			count: byte;			cr, cr1, cr2, cr3, cr4: chordrec;			chset, excset: pitchset;			minimum: integer;	begin		for count := 1 to numberoftimes do			begin				excset := [];				extractset(chr, chset);				cr := chr;				repeat					minimum := 9999;					downgrade(chr, excset, cr1, cr2, cr3, cr4);					if (cr4.total < chr.total) and ((chr.total - cr4.total) < minimum) then						begin							cr := cr4;							minimum := chr.total - cr4.total						end					else if (cr3.total < chr.total) and ((chr.total - cr3.total) < minimum) then						begin							cr := cr3;							minimum := chr.total - cr3.total						end					else if (cr2.total < chr.total) and ((chr.total - cr2.total) < minimum) then						begin							cr := cr2;							minimum := chr.total - cr2.total						end					else if (cr1.total < chr.total) and ((chr.total - cr1.total) < minimum) then						begin							cr := cr1;							minimum := chr.total - cr1.total						end;					excset := excset + [pmax];				until excset >= chset;				chr := cr			end	end;	procedure minimumdissrec (var chr: chordrec;									numberoftimes: byte);		var			count: byte;			cr, cr1, cr2, cr3, cr4: chordrec;			chset, excset: pitchset;			minimum: integer;	begin		for count := 1 to numberoftimes do			begin				excset := [];				extractset(chr, chset);				cr := chr;				repeat					minimum := 9999;					upgrade(chr, excset, cr1, cr2, cr3, cr4);					if (cr4.total > chr.total) and ((cr4.total - chr.total) < minimum) then						begin							cr := cr4;							minimum := cr4.total - chr.total						end					else if (cr3.total > chr.total) and ((cr3.total - chr.total) < minimum) then						begin							cr := cr3;							minimum := cr3.total - chr.total						end					else if (cr2.total > chr.total) and ((cr2.total - chr.total) < minimum) then						begin							cr := cr2;							minimum := cr2.total - chr.total						end					else if (cr1.total > chr.total) and ((cr1.total - chr.total) < minimum) then						begin							cr := cr1;							minimum := cr1.total - chr.total						end;					excset := excset + [pmin];				until excset >= chset;				chr := cr			end	end;	procedure minimumconsset (var cs: pitchset;									numberofsteps: byte);		var			cr: chordrec;	begin		scan(cs, cr);		minimumconsrec(cr, numberofsteps);		extractset(cr, cs);		dsg := cr.diss;		totalofall := cr.total;		hroot := cr.hifu;		carr := cr.stru	end;	procedure minimumdissset (var cs: pitchset;									numberofsteps: byte);		var			cr: chordrec;	begin		scan(cs, cr);		minimumdissrec(cr, numberofsteps);		extractset(cr, cs);		dsg := cr.diss;		totalofall := cr.total;		hroot := cr.hifu;		carr := cr.stru	end;end.
+{	This program is copyright (c) 1993 - 2005 Jos Kunst, the Jos Kunst heirs.	}
+{	This program is free software. You can redistribute it and/or modify it 	}
+{	under the terms of version 2 of the GNU General Public License, which you	}
+{	should have received with it.												}
+{	This program is distributed in the hope that it will be useful, but			}
+{	without any warranty, expressed or implied.									}
+
+unit chordworker;
+
+interface
+	uses
+		translations, chordscanner;
+	var
+		pmax, pmin, pmaxdiff: byte;
+		dsg, hroot: byte;
+		carr: chordarr;
+		totalofall: integer;
+		subsetascends, subsetdescends: boolean;
+
+	procedure extractset (chr: chordrec;
+									var chs: pitchset);
+{converse of scan: retrieves a chord set from the record containing its analysis}
+	procedure targetrecto (var chr: chordrec;
+									target: byte);
+{brings an analyzed chord as close as possible to a target dsg}
+	procedure targetsetto (var cs: pitchset;
+									target: byte);
+{brings an unanalyzed chord as close as possible to a target dsg}
+	procedure psmconsrec (var r: chordrec;
+									numberoftimes: byte);
+{diminishes an analyzed chord's dissonance for a given number of times, using parallel subset motion}
+	procedure psmdissrec (var r: chordrec;
+									numberoftimes: byte);
+{increases an analyzed chord's dissonance for a given number of times, using parallel subset motion}
+	procedure psmconsset (var cs: pitchset;
+									numberofsteps: byte);
+{diminishes an unanalyzed chord's dissonance for a given number of times, using parallel subset motion}
+	procedure psmdissset (var cs: pitchset;
+									numberofsteps: byte);
+{increases an unanalyzed chord's dissonance for a given number of times, using parallel subset motion}
+	procedure minimumconsrec (var chr: chordrec;
+									numberoftimes: byte);
+{makes a given analyzed chord the smallest possible amount more consonant}
+	procedure minimumdissrec (var chr: chordrec;
+									numberoftimes: byte);
+{makes a given analyzed chord the smallest possible amount more dissonant}
+	procedure minimumconsset (var cs: pitchset;
+									numberofsteps: byte);
+{makes a given unanalyzed chord the smallest possible amount more consonant}
+	procedure minimumdissset (var cs: pitchset;
+									numberofsteps: byte);
+{makes a given unanalyzed chord the smallest possible amount more dissonant}
+
+
+implementation
+
+	procedure extractset (chr: chordrec;
+									var chs: pitchset); { retrieves chord set from chord record }
+		var
+			p: byte;
+	begin{extractset}
+		p := 1;
+		chs := [];
+		repeat
+			chs := chs + [chr.stru[p, 1]];
+			p := p + 1;
+		until chr.stru[p, 1] = 0
+	end;{extractset}
+
+	procedure findpmaxcontrib (chr: chordrec;
+									except: pitchset); {looks for the most dissonant tone in the chord}
+		var
+			p: byte;
+			maxcontrib: integer;
+	begin{findpmaxcontrib}
+		p := 1;
+		maxcontrib := -1;
+		repeat
+			if (chr.stru[p, 2] > maxcontrib) and not (chr.stru[p, 1] in except) then
+				begin
+					pmax := chr.stru[p, 1];
+					maxcontrib := chr.stru[p, 2]
+				end;
+			p := p + 1;
+		until chr.stru[p, 1] = 0;
+	end;{findpmaxcontrib}
+
+	procedure downgrade (r: chordrec;
+									exceptset: pitchset;
+									var cra, crb, crc, crd: chordrec);
+{orders the chords resulting from the four possible second steps of the most dissonant tone, from low to high dsg }
+		var
+			cr1, cr11, cr2, cr22: chordrec;
+			chs, cs: pitchset;
+			t: integer;
+	begin{downgrade}
+		extractset(r, chs);
+		findpmaxcontrib(r, exceptset);
+		if pmax + 1 in chs then
+			cr1 := r
+		else
+			begin
+				cs := chs - [pmax];
+				cs := cs + [pmax + 1];
+				scan(cs, cr1)
+			end;
+		if pmax + 2 in chs then
+			cr11 := r
+		else
+			begin
+				cs := chs - [pmax];
+				cs := cs + [pmax + 2];
+				scan(cs, cr11)
+			end;
+		if pmax - 1 in chs then
+			cr2 := r
+		else
+			begin
+				cs := chs - [pmax];
+				cs := cs + [pmax - 1];
+				scan(cs, cr2)
+			end;
+		if pmax - 2 in chs then
+			cr22 := r
+		else
+			begin
+				cs := chs - [pmax];
+				cs := cs + [pmax - 2];
+				scan(cs, cr22)
+			end;
+		initto(cra, -1);
+		t := 0;
+		repeat
+			if t = cr1.total then
+				if cra.total = -1 then
+					begin
+						cra := cr1;
+						cr1.total := -1
+					end;
+			if t = cr2.total then
+				if cra.total = -1 then
+					begin
+						cra := cr2;
+						cr2.total := -1
+					end;
+			if t = cr11.total then
+				if cra.total = -1 then
+					begin
+						cra := cr11;
+						cr11.total := -1
+					end;
+			if t = cr22.total then
+				if cra.total = -1 then
+					begin
+						cra := cr22;
+						cr22.total := -1
+					end;
+			t := t + 1;
+		until cra.total <> -1;
+		initto(crb, -1);
+		t := 0;
+		repeat
+			if t = cr1.total then
+				if crb.total = -1 then
+					begin
+						crb := cr1;
+						cr1.total := -1
+					end;
+			if t = cr2.total then
+				if crb.total = -1 then
+					begin
+						crb := cr2;
+						cr2.total := -1
+					end;
+			if t = cr11.total then
+				if crb.total = -1 then
+					begin
+						crb := cr11;
+						cr11.total := -1
+					end;
+			if t = cr22.total then
+				if crb.total = -1 then
+					begin
+						crb := cr22;
+						cr22.total := -1
+					end;
+			t := t + 1;
+		until crb.total <> -1;
+		initto(crc, -1);
+		t := 0;
+		repeat
+			if t = cr1.total then
+				if crc.total = -1 then
+					begin
+						crc := cr1;
+						cr1.total := -1
+					end;
+			if t = cr2.total then
+				if crc.total = -1 then
+					begin
+						crc := cr2;
+						cr2.total := -1
+					end;
+			if t = cr11.total then
+				if crc.total = -1 then
+					begin
+						crc := cr11;
+						cr11.total := -1
+					end;
+			if t = cr22.total then
+				if crc.total = -1 then
+					begin
+						crc := cr22;
+						cr22.total := -1
+					end;
+			t := t + 1;
+		until crc.total <> -1;
+		initto(crd, -1);
+		t := 0;
+		repeat
+			if t = cr1.total then
+				if crd.total = -1 then
+					begin
+						crd := cr1;
+						cr1.total := -1
+					end;
+			if t = cr2.total then
+				if crd.total = -1 then
+					begin
+						crd := cr2;
+						cr2.total := -1
+					end;
+			if t = cr11.total then
+				if crd.total = -1 then
+					begin
+						crd := cr11;
+						cr11.total := -1
+					end;
+			if t = cr22.total then
+				if crd.total = -1 then
+					begin
+						crd := cr22;
+						cr22.total := -1
+					end;
+			t := t + 1;
+		until crd.total <> -1;
+	end;{downgrade}
+
+	procedure findpmincontrib (chr: chordrec;
+									except: pitchset); { finds the least dissonant tone in the chord }
+		var
+			p: byte;
+			mincontrib: integer;
+	begin{findpmincontrib}
+		p := 1;
+		mincontrib := 500;
+		repeat
+			if (chr.stru[p, 2] < mincontrib) and not (chr.stru[p, 1] in except) then
+				begin
+					pmin := chr.stru[p, 1];
+					mincontrib := chr.stru[p, 2]
+				end;
+			p := p + 1
+		until chr.stru[p, 1] = 0;
+	end;{findpmincontrib}
+
+	procedure upgrade (r: chordrec;
+									exceptset: pitchset;
+									var cra, crb, crc, crd: chordrec);
+{orders the chords resulting from the four possible second steps of the least dissonant tone, from high to low dsg }
+		var
+			cr1, cr11, cr2, cr22: chordrec;
+			chs, cs: pitchset;
+			t: integer;
+	begin{upgrade}
+		extractset(r, chs);
+		findpmincontrib(r, exceptset);
+		if pmin + 1 in chs then
+			cr1 := r
+		else
+			begin
+				cs := chs - [pmin];
+				cs := cs + [pmin + 1];
+				scan(cs, cr1)
+			end;
+		if pmin + 2 in chs then
+			cr11 := r
+		else
+			begin
+				cs := chs - [pmin];
+				cs := cs + [pmin + 2];
+				scan(cs, cr11)
+			end;
+		if pmin - 1 in chs then
+			cr2 := r
+		else
+			begin
+				cs := chs - [pmin];
+				cs := cs + [pmin - 1];
+				scan(cs, cr2)
+			end;
+		if pmin - 2 in chs then
+			cr22 := r
+		else
+			begin
+				cs := chs - [pmin];
+				cs := cs + [pmin - 2];
+				scan(cs, cr22)
+			end;
+		initto(crd, -1);
+		t := 0;
+		repeat
+			if t = cr1.total then
+				if crd.total = -1 then
+					begin
+						crd := cr1;
+						cr1.total := -1
+					end;
+			if t = cr2.total then
+				if crd.total = -1 then
+					begin
+						crd := cr2;
+						cr2.total := -1
+					end;
+			if t = cr11.total then
+				if crd.total = -1 then
+					begin
+						crd := cr11;
+						cr11.total := -1
+					end;
+			if t = cr22.total then
+				if crd.total = -1 then
+					begin
+						crd := cr22;
+						cr22.total := -1
+					end;
+			t := t + 1;
+		until crd.total <> -1;
+		initto(crc, -1);
+		t := 0;
+		repeat
+			if t = cr1.total then
+				if crc.total = -1 then
+					begin
+						crc := cr1;
+						cr1.total := -1
+					end;
+			if t = cr2.total then
+				if crc.total = -1 then
+					begin
+						crc := cr2;
+						cr2.total := -1
+					end;
+			if t = cr11.total then
+				if crc.total = -1 then
+					begin
+						crc := cr11;
+						cr11.total := -1
+					end;
+			if t = cr22.total then
+				if crc.total = -1 then
+					begin
+						crc := cr22;
+						cr22.total := -1
+					end;
+			t := t + 1;
+		until crc.total <> -1;
+		initto(crb, -1);
+		t := 0;
+		repeat
+			if t = cr1.total then
+				if crb.total = -1 then
+					begin
+						crb := cr1;
+						cr1.total := -1
+					end;
+			if t = cr2.total then
+				if crb.total = -1 then
+					begin
+						crb := cr2;
+						cr2.total := -1
+					end;
+			if t = cr11.total then
+				if crb.total = -1 then
+					begin
+						crb := cr11;
+						cr11.total := -1
+					end;
+			if t = cr22.total then
+				if crb.total = -1 then
+					begin
+						crb := cr22;
+						cr22.total := -1
+					end;
+			t := t + 1;
+		until crb.total <> -1;
+		initto(cra, -1);
+		t := 0;
+		repeat
+			if t = cr1.total then
+				if cra.total = -1 then
+					begin
+						cra := cr1;
+						cr1.total := -1
+					end;
+			if t = cr2.total then
+				if cra.total = -1 then
+					begin
+						cra := cr2;
+						cr2.total := -1
+					end;
+			if t = cr11.total then
+				if cra.total = -1 then
+					begin
+						cra := cr11;
+						cr11.total := -1
+					end;
+			if t = cr22.total then
+				if cra.total = -1 then
+					begin
+						cra := cr22;
+						cr22.total := -1
+					end;
+			t := t + 1;
+		until cra.total <> -1;
+	end;{upgrade}
+
+	procedure targetrecto (var chr: chordrec;
+									target: byte);
+		var
+			cr1, cr2, cr3, cr4: chordrec;
+			chset, excset: pitchset;
+	begin
+		if chr.diss > target then
+			begin
+				excset := [];
+				extractset(chr, chset);
+				repeat
+					downgrade(chr, excset, cr1, cr2, cr3, cr4);
+					if (cr1.diss >= target) and (cr1.diss < chr.diss) then
+						chr := cr1
+					else if (cr2.diss >= target) and (cr2.diss < chr.diss) then
+						chr := cr2
+					else if (cr3.diss >= target) and (cr3.diss < chr.diss) then
+						chr := cr3
+					else if (cr4.diss >= target) and (cr4.diss < chr.diss) then
+						chr := cr4;
+					excset := excset + [pmax];
+				until (excset >= chset) or (chr.diss = target)
+			end;
+		if chr.diss < target then
+			begin
+				excset := [];
+				extractset(chr, chset);
+				repeat
+					upgrade(chr, excset, cr1, cr2, cr3, cr4);
+					if (cr1.diss <= target) and (cr1.diss > chr.diss) then
+						chr := cr1
+					else if (cr2.diss <= target) and (cr2.diss > chr.diss) then
+						chr := cr2
+					else if (cr3.diss <= target) and (cr3.diss > chr.diss) then
+						chr := cr3
+					else if (cr4.diss <= target) and (cr4.diss > chr.diss) then
+						chr := cr4;
+					excset := excset + [pmin];
+				until (excset >= chset) or (chr.diss = target)
+			end;
+	end;{targetrecto}
+
+	procedure targetsetto (var cs: pitchset;
+									target: byte);
+		var
+			cr: chordrec;
+	begin
+		scan(cs, cr);
+		targetrecto(cr, target);
+		extractset(cr, cs);
+		dsg := cr.diss;
+		hroot := cr.hifu;
+		carr := cr.stru;
+		totalofall := cr.total
+	end;{targetsetto}
+
+	procedure findpmaxdiff (r1, r2: chordrec);
+		var
+			p, q, r: byte;
+			cs1, cs2: pitchset;
+			maxdiff: integer;
+	begin{findpmaxdiff}
+		extractset(r1, cs1);
+		extractset(r2, cs2);
+		maxdiff := -100;
+		for p := bottomnote to topnote do
+			if p in cs1 * cs2 then
+				begin
+					q := 0;
+					repeat
+						q := q + 1;
+					until r1.stru[q, 1] = p;
+					r := 0;
+					repeat
+						r := r + 1;
+					until r2.stru[r, 1] = p;
+					if (r2.stru[r, 2] - r1.stru[q, 2]) > maxdiff then
+						begin
+							maxdiff := r2.stru[r, 2] - r1.stru[q, 2];
+							pmaxdiff := p
+						end
+				end
+	end;{findpmaxdiff}
+
+	procedure psmconsrec (var r: chordrec;
+									numberoftimes: byte);
+		var
+			rtrial, rupward, rdownward: chordrec;
+			sr, smove, smoved: pitchset;
+			times, p: byte;
+	begin{psmconsrec}
+		subsetascends := FALSE;
+		subsetdescends := FALSE;
+		for times := 1 to numberoftimes do
+			begin
+				findpmaxcontrib(r, []);
+				smoved := [];
+				smove := [pmax];
+				extractset(r, sr);
+				sr := sr - smove;
+				sr := sr + [pmax + 1];
+				scan(sr, rtrial);
+				repeat
+					findpmaxdiff(r, rtrial);
+					smove := smove + [pmaxdiff];
+					rupward := rtrial;
+					for p := bottomnote to topnote do
+						if p in smove then
+							smoved := smoved + [p + 1];
+					sr := sr - smove;
+					sr := sr + smoved;
+					scan(sr, rtrial);
+				until rtrial.total >= rupward.total;
+				smoved := [];
+				smove := [pmax];
+				extractset(r, sr);
+				sr := sr - smove;
+				sr := sr + [pmax - 1];
+				scan(sr, rtrial);
+				repeat
+					findpmaxdiff(r, rtrial);
+					smove := smove + [pmaxdiff];
+					rdownward := rtrial;
+					for p := bottomnote to topnote do
+						if p in smove then
+							smoved := smoved + [p - 1];
+					sr := sr - smove;
+					sr := sr + smoved;
+					scan(sr, rtrial);
+				until rtrial.total >= rdownward.total;
+				if rdownward.total <= rupward.total then
+					begin
+						r := rdownward;
+						if numberoftimes = 1 then
+							subsetdescends := TRUE
+					end
+				else
+					begin
+						r := rupward;
+						if numberoftimes = 1 then
+							subsetascends := TRUE
+					end
+			end
+	end;{psmconsrec}
+
+	procedure psmdissrec (var r: chordrec;
+									numberoftimes: byte);
+		var
+			rtrial, rupward, rdownward: chordrec;
+			sr, smove, smoved: pitchset;
+			times, p: byte;
+	begin{psmdissrec}
+		subsetascends := FALSE;
+		subsetdescends := FALSE;
+		for times := 1 to numberoftimes do
+			begin
+				findpmincontrib(r, []);
+				smoved := [];
+				smove := [pmin];
+				extractset(r, sr);
+				sr := sr - smove;
+				sr := sr + [pmin + 1];
+				scan(sr, rtrial);
+				repeat
+					findpmaxdiff(rtrial, r);
+					smove := smove + [pmaxdiff];
+					rupward := rtrial;
+					for p := bottomnote to topnote do
+						if p in smove then
+							smoved := smoved + [p + 1];
+					sr := sr - smove;
+					sr := sr + smoved;
+					scan(sr, rtrial);
+				until rtrial.total <= rupward.total;
+				smoved := [];
+				smove := [pmin];
+				extractset(r, sr);
+				sr := sr - smove;
+				sr := sr + [pmin - 1];
+				scan(sr, rtrial);
+				repeat
+					findpmaxdiff(rtrial, r);
+					smove := smove + [pmaxdiff];
+					rdownward := rtrial;
+					for p := bottomnote to topnote do
+						if p in smove then
+							smoved := smoved + [p - 1];
+					sr := sr - smove;
+					sr := sr + smoved;
+					scan(sr, rtrial);
+				until rtrial.total <= rdownward.total;
+				if rdownward.total >= rupward.total then
+					begin
+						r := rdownward;
+						if numberoftimes = 1 then
+							subsetdescends := TRUE
+					end
+				else
+					begin
+						r := rupward;
+						if numberoftimes = 1 then
+							subsetascends := TRUE
+					end
+			end
+	end;{psmdissrec}
+
+	procedure psmconsset (var cs: pitchset;
+									numberofsteps: byte);
+		var
+			cr: chordrec;
+	begin
+		scan(cs, cr);
+		psmconsrec(cr, numberofsteps);
+		dsg := cr.diss;
+		totalofall := cr.total;
+		hroot := cr.hifu;
+		carr := cr.stru;
+		extractset(cr, cs)
+	end;
+
+	procedure psmdissset (var cs: pitchset;
+									numberofsteps: byte);
+		var
+			cr: chordrec;
+	begin
+		scan(cs, cr);
+		psmdissrec(cr, numberofsteps);
+		dsg := cr.diss;
+		totalofall := cr.total;
+		hroot := cr.hifu;
+		carr := cr.stru;
+		extractset(cr, cs)
+	end;
+
+	procedure minimumconsrec (var chr: chordrec;
+									numberoftimes: byte);
+		var
+			count: byte;
+			cr, cr1, cr2, cr3, cr4: chordrec;
+			chset, excset: pitchset;
+			minimum: integer;
+	begin
+		for count := 1 to numberoftimes do
+			begin
+				excset := [];
+				extractset(chr, chset);
+				cr := chr;
+				repeat
+					minimum := 9999;
+					downgrade(chr, excset, cr1, cr2, cr3, cr4);
+					if (cr4.total < chr.total) and ((chr.total - cr4.total) < minimum) then
+						begin
+							cr := cr4;
+							minimum := chr.total - cr4.total
+						end
+					else if (cr3.total < chr.total) and ((chr.total - cr3.total) < minimum) then
+						begin
+							cr := cr3;
+							minimum := chr.total - cr3.total
+						end
+					else if (cr2.total < chr.total) and ((chr.total - cr2.total) < minimum) then
+						begin
+							cr := cr2;
+							minimum := chr.total - cr2.total
+						end
+					else if (cr1.total < chr.total) and ((chr.total - cr1.total) < minimum) then
+						begin
+							cr := cr1;
+							minimum := chr.total - cr1.total
+						end;
+					excset := excset + [pmax];
+				until excset >= chset;
+				chr := cr
+			end
+	end;
+
+	procedure minimumdissrec (var chr: chordrec;
+									numberoftimes: byte);
+		var
+			count: byte;
+			cr, cr1, cr2, cr3, cr4: chordrec;
+			chset, excset: pitchset;
+			minimum: integer;
+	begin
+		for count := 1 to numberoftimes do
+			begin
+				excset := [];
+				extractset(chr, chset);
+				cr := chr;
+				repeat
+					minimum := 9999;
+					upgrade(chr, excset, cr1, cr2, cr3, cr4);
+					if (cr4.total > chr.total) and ((cr4.total - chr.total) < minimum) then
+						begin
+							cr := cr4;
+							minimum := cr4.total - chr.total
+						end
+					else if (cr3.total > chr.total) and ((cr3.total - chr.total) < minimum) then
+						begin
+							cr := cr3;
+							minimum := cr3.total - chr.total
+						end
+					else if (cr2.total > chr.total) and ((cr2.total - chr.total) < minimum) then
+						begin
+							cr := cr2;
+							minimum := cr2.total - chr.total
+						end
+					else if (cr1.total > chr.total) and ((cr1.total - chr.total) < minimum) then
+						begin
+							cr := cr1;
+							minimum := cr1.total - chr.total
+						end;
+					excset := excset + [pmin];
+				until excset >= chset;
+				chr := cr
+			end
+	end;
+
+	procedure minimumconsset (var cs: pitchset;
+									numberofsteps: byte);
+		var
+			cr: chordrec;
+	begin
+		scan(cs, cr);
+		minimumconsrec(cr, numberofsteps);
+		extractset(cr, cs);
+		dsg := cr.diss;
+		totalofall := cr.total;
+		hroot := cr.hifu;
+		carr := cr.stru
+	end;
+
+	procedure minimumdissset (var cs: pitchset;
+									numberofsteps: byte);
+		var
+			cr: chordrec;
+	begin
+		scan(cs, cr);
+		minimumdissrec(cr, numberofsteps);
+		extractset(cr, cs);
+		dsg := cr.diss;
+		totalofall := cr.total;
+		hroot := cr.hifu;
+		carr := cr.stru
+	end;
+
+end.
