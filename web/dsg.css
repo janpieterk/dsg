@@ -1,0 +1,120 @@
+/* CSS file for Dissonance Grading in the style of joskunst.net */
+
+body {
+	background: white;
+	color: black;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	max-width: 800px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	color: #600;
+	font-family: Tahoma, Helvetica, sans-serif;
+	background-color: inherit;
+	margin-top: 35px;
+}
+
+body#dsgpage {
+	padding-left: 5%;
+	padding-right: 10%;
+}
+
+body#dsgdocs {
+	padding-left: 10%;
+	padding-right: 20%;
+	line-height: 1.6em;
+}
+
+form#dsgform {
+	margin-top: 40px;
+}
+
+input.dsgbutton {
+	font-size: 12px;
+	margin-left: 5px;
+}
+
+pre#chordstructure {
+	margin-bottom: 20px;
+	font-weight: bold;
+}
+
+div#dsghistory {
+	margin-top: 40px;
+}
+
+table#chordworker caption {
+	margin-top: 20px;
+	margin-bottom: 15px;
+}
+
+h1#dsgtitle {
+	font-size: 120%;
+	margin-top: 20px;
+}
+
+p#originalaboutstring {
+	font-size: 12px;
+	margin-bottom: 5px;
+}
+
+p#phpportaboutstring {
+	font-size: 11px;
+	margin-top: 0;
+	padding-bottom: 10px;
+	border-bottom: 1px solid grey;
+}
+
+span#originalauthor {
+	font-weight: bold;
+}
+
+p#dsgexample, td#midicheckbox {
+	font-size: small;
+}
+
+span.chordexample {
+	font-weight: bold;
+}
+
+p#warning, .alert {
+	color: red;
+}
+
+p#dsgauthor {
+	border-style: solid;
+	border-left: none;
+	border-right: none;
+	border-width: 1px;
+	border-color: black;
+	margin: 0 0 0 0;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	font-size: large;
+}
+
+p#toplink {
+	text-align: right;
+	font-size: 0.8em;
+}
+
+p#bottomlink {
+	text-align: center;
+	font-size: 0.8em;
+	border-style: solid;
+	border-left: none;
+	border-right: none;
+	border-bottom: none;
+	border-width: 2px;
+	border-color: #CCC;
+	margin-top: 30px;
+	padding-top: 5px;
+}
+
+#playbuttonwrapper {
+	margin-left: 200px;
+}
+
+#workbutton {
+	margin-left: 20px;
+}

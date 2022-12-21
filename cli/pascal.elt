@@ -1,0 +1,7 @@
+# this file is meant for the expect-lite tool
+# see: http://expect-lite.sourceforge.net/
+# usage: $ expect-lite -c pascal.elt
+# it is assumed that a compiled dsg binary is available and in the user's path
+>dsg
+# test shared between Pascal and PHP in common include file
+~./dsg_cli_test.inc

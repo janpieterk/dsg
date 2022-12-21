@@ -1,0 +1,8 @@
+# this file is meant for the expect-lite tool
+# see: http://expect-lite.sourceforge.net/
+# usage: $ expect-lite -c php.elt
+# change this to wherever the dsg_cli.php file is located
+>cd ./php
+>php dsg_cli.php
+# test shared between Pascal and PHP in common include file
+~./dsg_cli_test.inc
