@@ -30,8 +30,8 @@ structure. Also a few long-standing bugs, found when comparing the output of
 the Pascal code with the PHP code, surfaced and were fixed. (The output of the 
 Pascal code is used as the gold standard for how the program should behave.)
 
-The PHP CLI and web interfaces both use the classes Chord.class.php and 
-DSG.class.php and the procedural code in set_emulation.inc.php, all located in 
+The PHP CLI and web interfaces both use the classes `Chord.class.php` and 
+`DSG.class.php` and the procedural code in `set_emulation.inc.php`, all located in 
 [web/includes](./web/includes).
 
 The PHP CLI program should work wherever you put the dsg directory:
