@@ -30,8 +30,8 @@ structure. Also a few long-standing bugs, found when comparing the outputs of
 the Pascal code and the PHP code, surfaced and were fixed. (The output of the 
 Pascal code is used as the gold standard for how the program should behave.)
 
-The PHP CLI and web interfaces both use the classes `Chord.class.php` and 
-`DSG.class.php` and the procedural code in `set_emulation.inc.php`, all located in 
+The PHP CLI and web interfaces both use the classes [Chord.class.php](web/includes/Chord.class.php) and 
+[DSG.class.php](web/includes/DSG.class.php) and the procedural code in [set_emulation.inc.php](web/includes/set_emulation.inc.php), all located in 
 [web/includes](./web/includes).
 
 The PHP CLI program should work wherever you put the dsg directory:
@@ -47,14 +47,17 @@ MIDI support is provided by third-party libraries. See  [web/includes/extlib/REA
 ## Automated tests
 
 An [expect-lite](https://expect-lite.sourceforge.net/) script to test the CLI programs is avaiable, see the files
-./cli/pascal.elt, ./cli/php.elt and ./cli/dsg_cli_test.inc.
+[./cli/pascal.elt](cli/pascal.elt), [./cli/php.elt](cli/php.elt) and [./cli/dsg_cli_test.inc](cli/dsg_cli_test.inc).
 
 ### CLI
 
 Install expect-lite, see [here](https://expect-lite.sourceforge.net/expect-lite_install.html) for instructions.
 
-Make sure that the environment variable `EL_REMOTE_HOST` is set to `none`: `$ export EL_REMOTE_HOST=none`
+Make sure that the environment variable `EL_REMOTE_HOST` is set to `none`:
 
+```shekk
+$ export EL_REMOTE_HOST=none`
+```
 #### php-cli
 
 ```shell
