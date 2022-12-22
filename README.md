@@ -26,8 +26,8 @@ Some time later, also in 2006, a web interface for the program was created.
 This was and is available at [https://www.joskunst.net/dsg/](https://www.joskunst.net/dsg/).
 
 In 2012 the procedural PHP code was seriously refactored to an object-oriented 
-structure. Also a few long-standing bugs, found when comparing the output of 
-the Pascal code with the PHP code, surfaced and were fixed. (The output of the 
+structure. Also a few long-standing bugs, found when comparing the outputs of 
+the Pascal code and the PHP code, surfaced and were fixed. (The output of the 
 Pascal code is used as the gold standard for how the program should behave.)
 
 The PHP CLI and web interfaces both use the classes `Chord.class.php` and 
