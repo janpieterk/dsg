@@ -26,9 +26,9 @@ $show_play_button = FALSE;
 if (DSG_MIDI_SUPPORT && $view->getSound() && file_exists($view->getMIDIFilePath())) {
   $show_play_button = TRUE;
   $nonce = basename($view->getMIDIFilePath(), '.mid');
-  header("Content-Security-Policy: default-src 'self';script-src 'unsafe-inline' 'nonce-$nonce' 'self';base-uri 'self';form-action 'self';object-src 'self';frame-ancestors 'none';frame-src 'none';report-uri https://b6951961d3ee91f0e6a14aeb394a9b8d.report-uri.com/r/d/csp/enforce;");
+  header("Content-Security-Policy: default-src 'self';script-src 'unsafe-inline' 'nonce-$nonce' 'self';base-uri 'self';form-action 'self';object-src 'self';frame-ancestors 'none';frame-src 'none';");
 } else {
-  header("Content-Security-Policy: default-src 'self';base-uri 'self';form-action 'self';object-src 'none';frame-ancestors 'none';frame-src 'none';report-uri https://b6951961d3ee91f0e6a14aeb394a9b8d.report-uri.com/r/d/csp/enforce;");
+  header("Content-Security-Policy: default-src 'self';base-uri 'self';form-action 'self';object-src 'none';frame-ancestors 'none';frame-src 'none';");
 }
 
 ?>
