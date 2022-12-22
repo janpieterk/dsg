@@ -5,7 +5,7 @@ pre-compositionial tool and used as such by himself.
 
 It scans and/or modifies chords along the dimension of dissonance.
 
-The original documenation by Jos Kunst can be found in the file [INTRODUCTION.txt](./INTRODUCTION.txt).
+The original documentation by Jos Kunst can be found in the file [INTRODUCTION.txt](./INTRODUCTION.txt).
 
 The original program is a command-line tool written in Pascal (1993). The 
 original source code, meant for the Symantec Think Pascal compiler for classic 
