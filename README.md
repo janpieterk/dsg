@@ -47,7 +47,7 @@ MIDI support is provided by third-party libraries. See  [web/includes/extlib/REA
 ## Automated tests
 
 An [expect-lite](https://expect-lite.sourceforge.net/) script to test the CLI programs is avaiable, see the files
-[./cli/pascal.elt](cli/pascal.elt), [./cli/php.elt](cli/php.elt) and [./cli/dsg_cli_test.inc](cli/dsg_cli_test.inc).
+[cli/pascal.elt](./cli/pascal.elt), [cli/php.elt](./cli/php.elt) and [cli/dsg_cli_test.inc](./cli/dsg_cli_test.inc).
 
 ### CLI
 
