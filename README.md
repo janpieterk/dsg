@@ -99,7 +99,7 @@ Time: 00:04.222, Memory: 4.00 MB
 OK (39 tests, 39 assertions)
 ```
 
-The PHP code runs correctly under PHP 7.4. Not tested uder PHP 8.
+The PHP code runs correctly under PHP 7.4. Not tested under PHP 8.
 
 
 Released under the terms of version 2 of the GNU General Public License.
