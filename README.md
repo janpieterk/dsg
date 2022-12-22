@@ -56,7 +56,7 @@ Install expect-lite, see [here](https://expect-lite.sourceforge.net/expect-lite_
 Make sure that the environment variable `EL_REMOTE_HOST` is set to `none`:
 
 ```shekk
-$ export EL_REMOTE_HOST=none`
+$ export EL_REMOTE_HOST=none
 ```
 #### php-cli
 
